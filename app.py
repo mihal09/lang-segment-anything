@@ -4,6 +4,7 @@ import warnings
 import gradio as gr
 import lightning as L
 import numpy as np
+from lightning.app import LightningApp
 from lightning.app.components.serve import ServeGradio
 from PIL import Image
 
@@ -72,5 +73,26 @@ class LitGradio(ServeGradio):
         self.ready = True
         return model
 
+    def run(self, *args, **kwargs):
+        if self._model is None:
+            self._model = self.build_model()
+        fn = partial(self.predict, *args, **kwargs)
+        fn.__name__ = self.predict.__name__
+        self.ready = True
+        gr.Interface(
+            fn=fn,
+            inputs=self.inputs,
+            outputs=self.outputs,
+            examples=self.examples,
+            title=self.title,
+            description=self.description,
+            theme=self._theme,
+        ).launch(
+            server_name=self.host,
+            server_port=self.port,
+            enable_queue=self.enable_queue,
+            share=True
+        )
 
-app = L.LightningApp(LitGradio())
+
+app = LightningApp(LitGradio())
