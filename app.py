@@ -1,6 +1,7 @@
 import os
 import warnings
 
+from functools import partial
 import gradio as gr
 import lightning as L
 import numpy as np
